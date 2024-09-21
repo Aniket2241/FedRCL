@@ -54,7 +54,7 @@ def build_dataset(args, train=True):
 
     download = args.dataset.download if args.dataset.get('download') else False
 
-    with open('datasets/configs.yaml', 'r') as f:
+    with open('/content/FedRCL/datasets/configs.yaml', 'r') as f:
         dataset_config = yaml.safe_load(f)[args.dataset.name]
     transform = get_transform(args, train, dataset_config)
     dataset = DATASET_REGISTRY.get(args.dataset.name)(root=args.dataset.path, download=download, train=train, transform=transform) if len(args.dataset.path) > 0 else None
