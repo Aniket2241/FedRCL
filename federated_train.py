@@ -11,8 +11,6 @@ from models.build import build_encoder
 from servers.build import get_server_type, build_server
 from clients.build import get_client_type
 from evalers.build import get_evaler_type
-# from trainer.build import build_trainer
-# from trainers import Trainer
 from trainers.build import get_trainer_type
 
 from utils import initalize_random_seed
@@ -21,9 +19,7 @@ import hydra
 from omegaconf import DictConfig
 import omegaconf
 import coloredlogs, logging
-# import loggings
 logger = logging.getLogger(__name__)
-# coloredlogs.install(fmt='%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s')
 coloredlogs.install(level='INFO', fmt='%(asctime)s %(name)s[%(process)d] %(message)s', datefmt='%m-%d %H:%M:%S')
 
 wandb.require("service")
@@ -33,9 +29,9 @@ def main(args : DictConfig) -> None:
 
     torch.multiprocessing.set_sharing_strategy('file_system')
     set_start_method('spawn', True)
-    # pid = os.getpid()
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
+    # Set up logging directory
     args.log_dir = Path(args.log_dir)
     exp_name = args.exp_name if args.remark == "" else f"{args.exp_name}_{args.remark}"
     args.log_dir = args.log_dir / args.dataset.name / exp_name
@@ -43,7 +39,7 @@ def main(args : DictConfig) -> None:
     if not args.log_dir.exists():
         args.log_dir.mkdir(parents=True, exist_ok=True)
 
-    ## Wandb
+    ## Wandb setup
     if args.wandb:
         wandb.init(entity='federated_learning',
                 project=args.project,
@@ -55,20 +51,21 @@ def main(args : DictConfig) -> None:
             args, resolve=True, throw_on_missing=True
         ))
 
+    # Initialize random seed and device
     initalize_random_seed(args)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("device", device)
 
+    # Build model, client, server, datasets, evaler, and trainer
     model = build_encoder(args)
     client_type = get_client_type(args)
     server = build_server(args)
-    datasets = build_datasets(args)
+    datasets = build_datasets(args)  # Load datasets including brain_dataset
     evaler_type = get_evaler_type(args)
 
     trainer_type = get_trainer_type(args)
     trainer = trainer_type(model=model, client_type=client_type, server=server, evaler_type=evaler_type,
-                           datasets=datasets,
-                           device=device, args=args, config=None)
+                           datasets=datasets, device=device, args=args, config=None)
     trainer.train()
 
 

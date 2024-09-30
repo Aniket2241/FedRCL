@@ -48,6 +48,8 @@ def get_numclasses(args,trainset = None):
         num_classes = 2
     elif args.dataset.name in ["leaf_femnist"]:
         num_classes = 62
+    elif args.dataset.name in ["brain_dataset"]:
+       num_classes=3
     elif args.set in ["shakespeare"]:
         num_classes=80
     else:
@@ -129,8 +131,3 @@ def create_pth_dict(pth_path):
             pth_dict[number] = filepath
 
     return dict(sorted(pth_dict.items()))
-
-
-
-
-

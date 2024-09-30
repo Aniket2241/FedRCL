@@ -1,4 +1,3 @@
-
 #################### Default Setup ####################
 wandb: False
 seed: 0
@@ -58,8 +57,8 @@ defaults:
   - trainer: base
   - client: base
   - evaler: base
-  - dataset: cifar100
+  - dataset: brain_dataset
+  - _self_
   - server: base
   - model: resnet18
   - override hydra/job_logging: default
-
