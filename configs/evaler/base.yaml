@@ -2,6 +2,6 @@
 type: Evaler
 freq: 1
 retrieval_freq: 10
-batch_size: 128
+batch_size: 64
 landscape_freq: 0
   

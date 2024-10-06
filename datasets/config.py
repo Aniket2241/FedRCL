@@ -9,7 +9,8 @@ mean = {
     'inshop': (0.7575, 0.7162, 0.7072),
     'sop': (0.5461, 0.4972, 0.4565),
     'nus_wide': (0.485, 0.456, 0.406),
-    'iNaturalist': (0.485, 0.456, 0.406)
+    'iNaturalist': (0.485, 0.456, 0.406),
+    'brain_dataset':(0.5 , 0.5, 0.5),
 }
 
 std = {
@@ -21,6 +22,7 @@ std = {
     'sop': (0.2867, 0.2894, 0.2994),
     'nus_wide': (0.229, 0.224, 0.225),
     'iNaturalist':  (0.229, 0.224, 0.225),
+    'brain_dataset':(0.5 , 0.5 , 0.5),
 }
 
 num_classes = {
@@ -30,7 +32,8 @@ num_classes = {
     'car196': 196,
     'inshop': 2173,
     'sop': 5036,
-    'imagenet': 1000
+    'imagenet': 1000,
+    'brain_dataset':3,
 }
 
 imsize = {

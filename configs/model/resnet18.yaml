@@ -1,7 +1,7 @@
 ## Model ##
 name: "ResNet18_base"
-pretrained: False
-l2_norm: False
-use_bn_layer: False
+pretrained: True
+l2_norm: True
+use_bn_layer: True
 # freeze_layer: False  # or ['fc']
 last_feature_dim: 512

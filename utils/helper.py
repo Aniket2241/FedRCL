@@ -49,7 +49,7 @@ def get_numclasses(args,trainset = None):
     elif args.dataset.name in ["leaf_femnist"]:
         num_classes = 62
     elif args.dataset.name in ["brain_dataset"]:
-       num_classes=3
+        num_classes=3
     elif args.set in ["shakespeare"]:
         num_classes=80
     else:
@@ -67,6 +67,8 @@ def get_optimizer(args, parameters):
         optimizer = optim.SGD(parameters, lr=args.lr,momentum=args.momentum, weight_decay=args.weight_decay)
     elif args.set=="CIFAR100":
         optimizer = optim.SGD(parameters, lr=args.lr,momentum=args.momentum, weight_decay=args.weight_decay)
+    elif args.set == "brain_dataset":
+        optimizer = optim.SGD(parameters, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:
         print("Invalid mode")
         return
