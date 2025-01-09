@@ -129,14 +129,36 @@ class Client():
         return self.model.state_dict(), loss_dict
     
 
-    def _algorithm(self, images, labels, ) -> Dict:
-        losses = defaultdict(float)
+    def _algorithm(self, images, labels):
+    # Forward pass
+        outputs = self.model(images)
+    
+    # Extract logits from outputs if it's a dictionary
+        if isinstance(outputs, dict):
+        # Check multiple possible keys
+            logits = outputs.get("logit")
+            if logits is None:
+                raise ValueError(f"Model output dictionary does not contain 'logits' or 'predictions' keys. Keys available: {outputs.keys()}")
+        else:
+            logits = outputs  # If outputs is a tensor, directly use it
+    
+    # Compute loss
+        loss_fn = nn.CrossEntropyLoss()
+        loss = loss_fn(logits, labels)
+        losses = {"cross_entropy": loss}
 
-        results = self.model(images)
-        cls_loss = self.criterion(results["logit"], labels)
-        losses["cls"] = cls_loss
+    # Return losses and auxiliary outputs
+        return losses, outputs
 
-        del results
-        return losses
+
+
+        
+
+        
+       
+        
+
+        
+        
 
 
