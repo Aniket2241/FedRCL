@@ -17,9 +17,11 @@ class RCLClient(Client):
     def __init__(self, args, client_index, model):
         super().__init__(args, client_index, model)
         self.residuals = {}  # Residuals for sparsification
+        self.spars_k = 100  # Hardcoded top-k value
 
-    def sparsify(self, updates, k):
+    def sparsify(self, updates, k=None):
         """Sparsify the updates by retaining only top-k elements."""
+        k = k or self.spars_k  # Use hardcoded `spars_k` if `k` is None
         flat_updates = torch.cat([param.view(-1) for param in updates.values()])
         topk_values, topk_indices = torch.topk(torch.abs(flat_updates), k)
         mask = torch.zeros_like(flat_updates)
@@ -45,16 +47,16 @@ class RCLClient(Client):
         start = time.time()
 
         self.weights = self.get_weights(epoch=global_epoch)
-        
+    
         for local_epoch in range(self.args.trainer.local_epochs):
             for i, (images, labels) in enumerate(self.loader):
                 images, labels = images.to(self.device), labels.to(self.device)
                 self.model.zero_grad()
 
                 with autocast(enabled=self.args.use_amp):
-                    losses, _ = self._algorithm(images, labels)
+                  losses, _ = self._algorithm(images, labels)
 
-                    loss = sum([self.weights.get(loss_key, 0) * losses[loss_key] for loss_key in losses])
+                  loss = sum([self.weights.get(loss_key, 0) * losses[loss_key] for loss_key in losses])
 
                 scaler.scale(loss).backward()
                 scaler.unscale_(self.optimizer)
@@ -64,29 +66,33 @@ class RCLClient(Client):
 
             self.scheduler.step()
 
-        # Compute the model updates
+    # Compute the model updates
         local_updates = {
             name: param - self.global_model.state_dict()[name]
             for name, param in self.model.state_dict().items()
-        }
+    }
 
-        # Add residuals to current updates
+    # Add residuals to current updates
         for name in local_updates:
             if name in self.residuals:
                 local_updates[name] += self.residuals[name]
 
-        # Sparsify the updates
-        sparsified_updates = self.sparsify(local_updates, k=self.args.client.top_k)
+    # Sparsify the updates
+        sparsified_updates = self.sparsify(local_updates)
 
-        # Update residuals
+    # Update residuals
         self.residuals = {
-            name: local_updates[name] - sparsified_updates[name]
-            for name in local_updates
-        }
+        name: local_updates[name] - sparsified_updates[name]
+        for name in local_updates
+    }
+
+    # Ensure all updates are moved to the CPU before sending
+        sparsified_updates_cpu = {name: param.cpu() for name, param in sparsified_updates.items()}
 
         self.model.to('cpu')
         self.global_model.to('cpu')
 
         gc.collect()
 
-        return sparsified_updates, {}
+    # Return CPU tensors
+        return sparsified_updates_cpu, {}
